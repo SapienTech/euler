@@ -1,0 +1,19 @@
+Cyclic Figurate Numbers algo:
+
+Just do a basic loop through everything, and when we get to a point where we get a hit on the last group, we exit and display the values
+
+The loops:
+
+Rules:
+Looping through each value in the first list, which for simplicity we will make separate from the other loops
+
+Given the current matching value, loop through all the values in each section.
+      If we get a hit, add value to final list, and reccur with the hit set removed.
+      We need to loops here:
+      	 One outer loop that is in control of the index, if the index is greater than the the length of the list, then we are done
+	     Otherwise get the set, and pass that list along with the difference to the inner loop:
+	 Inner loop:
+	       Loop through all values in the set, each time we get a hit, then we call outer loop with index 0, added value...
+
+This seems like a decent way to do it now?
+     Current continuation is for the outer loop btw...

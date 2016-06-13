@@ -1,0 +1,26 @@
+Algorithm:
+
+Classic dynamic programming problem:
+
+Top down approach:
+    Starting with the top, we find the sum, and remember it
+     	      Recusively find the smallest sum for all triangles at that index
+	      Then loop through all items in the row below by passing them the index and the sum.
+	      Continue until there are no more triangles
+
+
+The functions we need:
+    Func1 search-sub-triangles Index Sum:
+    	 This function recursively finds the smallest triangle with the index as the point
+Func2 get-sub-triangle-sum index, row, sum:
+      Will sum the row, and subtract it from the sum
+
+
+	      
+
+
+Since we are going to be doing a lot of index recalling, we should use a triangle array, nt list.
+Can we make any assumptions as we try to find a small triangle? I suppose not since we don't know much about the local changes....
+
+
+Note that indexing over the entire large triangle might take a little too long... We should use sub-triangles instead
