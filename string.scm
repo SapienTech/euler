@@ -1,0 +1,8 @@
+(define (string-split regexp str)
+  (let ((len     (string-length str))
+        (matches (list-matches regexp str)))
+    (let ((starts (map match:start matches))
+          (ends   (map match:end   matches)))
+      (map (cut substring str <> <>)
+           `(0 ,@ends)
+           `(,@starts ,len)))))
