@@ -1,6 +1,7 @@
 (define-module (euler utils))
 
-(use-modules (srfi srfi-1))
+(use-modules (srfi srfi-1)
+             (wak foof-loop))
 
 (define-public (lst-index lst item)
   (let loop ([i 0] [curr-lst lst])
@@ -79,3 +80,82 @@
 	    (if (<= n-remdr remdr)
 		(loop (1- i) (- remdr n-remdr) (cons "1" b-list))
 		(loop (1- i) remdr (cons "0" b-list))))))))
+
+;;; Add hash-table foof-loop support
+(define-public (categorize list cat-proc vector-size) 
+  (loop ((for elt (in-list list))
+         (with index 0 (cat-proc elt))
+         (with vec (make-vector (1+ vector-size) '())
+               (begin
+                 (vector-set! vec index
+                              (cons elt
+                                    (vector-ref vec index)))
+                 vec)))
+        => vec))
+
+(define (min-length vs)
+  (let loop ((vs (cdr vs))
+             (result (vector-length (car vs))))
+    (if (null? vs)
+        result
+        (loop (cdr vs) (min result (vector-length (car vs)))))))
+
+(define-syntax-rule (assert-procedure f who)
+  (unless (procedure? f)
+    (error-from who "expected procedure, got" f)))
+
+(define-syntax-rule (assert-vector v who)
+  (unless (vector? v)
+    (error-from who "expected vector, got" v)))
+
+(define-syntax-rule (assert-vectors vs who)
+  (let loop ((vs vs))
+    (unless (null? vs)
+      (assert-vector (car vs) who)
+      (loop (cdr vs)))))
+
+(define (error-from who msg . args)
+  (apply error
+         (string-append (symbol->string who) ": " msg)
+         args))
+
+(define-public vector-map-no-idx
+  (case-lambda
+    ((f v)
+     (assert-procedure f 'vector-map)
+     (assert-vector v 'vector-map)
+     (let* ((len (vector-length v))
+            (result (make-vector len)))
+       (let loop ((i 0))
+         (unless (= i len)
+           (vector-set! result i (f (vector-ref v i)))
+           (loop (+ i 1))))
+       result))
+    ((f v1 v2)
+     (assert-procedure f 'vector-map)
+     (assert-vector v1 'vector-map)
+     (assert-vector v2 'vector-map)
+     (let* ((len (min (vector-length v1) (vector-length v2)))
+            (result (make-vector len)))
+       (let loop ((i 0))
+         (unless (= i len)
+           (vector-set! result i (f (vector-ref v1 i) (vector-ref v2 i)))
+           (loop (+ i 1))))
+       result))
+    ((f . vs)
+     (assert-procedure f 'vector-map)
+     (assert-vectors vs 'vector-map)
+     (let* ((len (min-length vs))
+            (result (make-vector len)))
+       (let loop ((i 0))
+         (unless (= i len)
+           (vector-set! result i (apply f (vectors-ref vs i)))
+           (loop (+ i 1))))
+       result))))
+
+(define (vectors-ref vs i)
+  (let loop ((vs vs) (xs '()))
+    (if (null? vs)
+        (reverse! xs)
+        (loop (cdr vs) (cons (vector-ref (car vs) i)
+                             xs)))))
