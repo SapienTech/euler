@@ -1,6 +1,7 @@
 (define-module (euler utils))
 
 (use-modules (srfi srfi-1)
+             (srfi srfi-26)
              (wak foof-loop))
 
 (define-public (lst-index lst item)
@@ -22,6 +23,12 @@
 (define-public (number-length n)
   (string-length (number->string n)))
 
+
+;;; TODO: try impl using compose
+(define (digits=? n1 n2)
+  (apply equal? (map (cut sort <> <)
+                     (map number->digits (list n1 n2)))))
+
 (define-public (digits>? n1 n2)
   (> (number-length n1) (number-length n2)))
 
@@ -32,24 +39,21 @@
   (let ([digits (number->digits n)])
     (lset= = digits (iota (length digits) 1))))
 
-(define-public (truth-and-fold proc lst)
-  (fold (lambda (item acc)
-          (and acc (proc item)))
-        #t
-        lst))
+(define (fold-and proc lst)
+  (loop continue ((for element (in-list lst)))
+        => #t
+        (if (proc element) (continue) #f)))
 
-(define-public (truth-or-fold proc lst)
-  (let lp ([lst lst])
-    (cond
-     [(null? lst) #f]
-     [(proc (car lst)) #t]
-     [else (lp (cdr lst))])))
+(define-public (fold-or proc lst)
+  (loop continue ((for element (in-list lst)))
+        => #f
+        (if (proc element) #t (continue))))
 
-;; TODO: eventually generalize this using a macro
+;;; TODO: talk to irc about style forms
 (define-public (number-append n1 n2)
-  (string->number
-   (string-append (number->string n1)
-		  (number->string n2))))
+  (+ (* n1 (expt 10
+                 (number-length n2)))
+     n2))
 
 (define-public (number-reverse n)
   (string->number (string-reverse (number->string n))))
