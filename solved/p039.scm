@@ -5,27 +5,21 @@
              (euler utils)
              (wak foof-loop))
 
+;;; Returns (number-of-triangles @perimeter) pair
 (define* (solve #:optional (max-perimeter 1001))
+  "For which perimeter ≤ 1000, is the number of solutions maximised?"
   (let* ((right-triangles (right-triangles-under max-perimeter))
-         (sorted-triangles
-          (group-triangles-by-perimeter right-triangles max-perimeter))
-         (triangle-count@perimeters (vector-map-no-idx length sorted-triangles)))
-    (loop ((for triangle-count perimeter
-                (in-vector triangle-count@perimeters))
-           (with triangle-count@perimeter (cons 0 0)
-                 (cons triangle-count perimeter))
-           (with max-count@perimeter (cons 0 0)
-                 (take-larger max-count@perimeter
-                              triangle-count@perimeter)))
-          => max-count@perimeter)))
+         (grouped-triangles (group-triangles-by-perimeter right-triangles
+                                                          max-perimeter)))
+    (find-largest-triangle-group grouped-triangles)))
 
-(define (right-triangles-under max-perimeter)
+(define (right-triangles-under perimeter)
   (loop continue ((a 1) (b 1) (triangles '()))
     (let ((c (sqrt (+ (* a a) (* b b)))))
       (cond
-       ((> b (ceiling (/ max-perimeter 2)))
+       ((> b (ceiling (/ perimeter 2)))
         triangles)
-       ((> (+ a b c) max-perimeter)
+       ((> (+ a b c) perimeter)
         (continue (=> a 1)
                   (=> b (1+ b))))
        ((> a b)
@@ -45,6 +39,19 @@
 (define (triangle-perimeter triangle)
   (apply + triangle))
 
-(define (take-larger pair1 pair2)
-  (if (>= (car pair1) (car pair2))
-      pair1 pair2))
+(define (find-largest-triangle-group triangle-groups)
+  (loop ((for group perimeter
+              (in-vector triangle-groups))
+         (with curr-group (cons 0 0)
+               (cons (group-size group) perimeter))
+         (with largest-group (cons 0 0)
+               (take-larger-group largest-group
+                                  curr-group)))
+        => largest-group))
+
+(define (group-size group)
+  (length group))
+
+(define (take-larger-group g1 g2)
+  (if (>= (car g1) (car g2))
+      g1 g2))
