@@ -25,7 +25,7 @@
 
 
 ;;; TODO: try impl using compose
-(define (digits=? n1 n2)
+(define-public (digits=? n1 n2)
   (apply equal? (map (cut sort <> <)
                      (map number->digits (list n1 n2)))))
 
@@ -39,7 +39,7 @@
   (let ([digits (number->digits n)])
     (lset= = digits (iota (length digits) 1))))
 
-(define (fold-and proc lst)
+(define-public (fold-and proc lst)
   (loop continue ((for element (in-list lst)))
         => #t
         (if (proc element) (continue) #f)))
