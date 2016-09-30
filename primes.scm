@@ -37,7 +37,7 @@
   (let loop ((curr 3) (primes '(2)))
     (if (> curr limit) (reverse primes)
 	(loop (+ 2 curr)
-	      (if (truth-and-fold (lambda (prime)
+	      (if (fold-and (lambda (prime)
 				(not (= 0 (modulo curr prime))))
 			      primes)
 		  (cons curr primes)
@@ -59,7 +59,7 @@
      [(= 1 (length prime-cache)) (set! prime-cache '(2 3)) 3]
      [else
       (let lp ([i (+ 2 (last prime-cache))])
-	(if (truth-and-fold (lambda (prime)
+	(if (fold-and (lambda (prime)
 			  (not (= 0 (modulo i prime))))
 			prime-cache)
 	    (begin (set! prime-cache (append prime-cache (list i)))
@@ -67,14 +67,6 @@
 	    (lp (+ 2 i))))])))
 
 (define prime-cache #f)
-
-(define-public (prime? n)
-  (when (or (not prime-cache)
-	    (>= n (bitvector-length prime-cache)))
-    (set! prime-cache
-      (erato-bit (expt n 2))))
-  (if (< n 0) #f
-      (bitvector-ref prime-cache n)))
 
 ;; Evenutally make prime input optional
 (define-public (prime-factors n primes)
@@ -128,14 +120,15 @@
 
 ;; as set for very high valued primes
 (define-public (prime? n)
-  (let lp ([as '(2 3 5 7 11)])
-    (cond
-     [(null? as) #t]
-     [(= n (car as)) #t]
-     [(not (strong-pseudoprime? n (car as))) #f]
-     [else (lp (cdr as))])))
+  (if (<= n 1) #f
+      (let lp ([as '(2 3 5 7 11)])
+        (cond
+         [(null? as) #t]
+         [(= n (car as)) #t]
+         [(not (strong-pseudoprime? n (car as))) #f]
+         [else (lp (cdr as))]))))
 
-(define-public (prime? n k)
+(define (primek? n k)
   (let loop ((k k))
     (cond ((zero? k) #t)
           ((not (strong-pseudoprime? n (random (+ 2 (- n 3))))) #f)
