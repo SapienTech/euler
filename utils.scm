@@ -49,7 +49,7 @@
         => #f
         (if (proc element) #t (continue))))
 
-(define-public (max > . args)
+(define-public (max-generic > . args)
   (fold (lambda (datum max-datum)
            (if max-datum
                (if (> datum max-datum) datum
