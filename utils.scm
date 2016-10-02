@@ -49,6 +49,15 @@
         => #f
         (if (proc element) #t (continue))))
 
+(define-public (max > . args)
+  (fold (lambda (datum max-datum)
+           (if max-datum
+               (if (> datum max-datum) datum
+                   max-datum)
+               datum))
+          #f
+          args))
+
 ;;; TODO: talk to irc about style forms
 (define-public (number-append n1 n2)
   (+ (* n1 (expt 10
