@@ -1,50 +1,35 @@
 ;; Coin sums (using dynamic programming)
+;; Both top-down and bottom-up approaches presented (bottom-up significantly faster
 
-;; Both top-down and bottom-up approaches shown. bottom up is faster
+(define-module (euler solved p031))
+(use-modules (srfi srfi-1)
+             (wak foof-loop)
+             (ice-9 match))
 
-(define-module (solved p031))
+(define coins '(200 100 50 20 10 5 2 1))
 
-(use-modules (srfi srfi-1))
+;;; Top-down:
 
-(define coins (reverse (list 1 2 5 10 20 50 100 200)))
+(define* (coin-sums amount #:optional (coins coins))
+  (if (<= (length coins) 1) 1
+      (loop continue ((amount amount))
+            (if (< amount 0) 0
+                (+ (continue (- amount (car coins)))
+                   (coin-sums amount (cdr coins)))))))
 
+(define* (coin-sums-match amount #:optional (coins coins))
+  (match coins
+    ((coin) 1) 
+    ((coin . rest)
+     (loop continue ((amount amount))
+           (if (<= amount 0) 1
+               (+ (continue (- amount coin))
+                  (coin-sums amount rest)))))))
 
-;; Top-down approach w/out memoization
-(define (coin-combinations-for-amount-top-down amount coins)
-  (define (loop curr-amount curr-coins combinations)
-    (append-map (lambda (combination)
-		  (map (lambda (sub-combo)
-			 (append combination sub-combo))
-		       (let ((sub-combos (inner-loop curr-amount curr-coins)))
-			 sub-combos)))
-		combinations))
-
-
-  (define (inner-loop curr-amount curr-coins)
-    (apply append (filter-map (lambda (coin index)
-		     (cond
-		      ((> coin curr-amount) #f)
-		      ((= coin curr-amount) (list (list coin)))
-		      (else (begin
-			      (loop (- curr-amount coin)
-				    (drop curr-coins index)
-				    (list (list coin)))))))
-		   curr-coins
-		   (iota (length curr-coins)))))
-  (loop amount coins '(())))
-
-(define (top-down-w/out-memoization-fast amount coins)
-  (let lp ([curr-amount amount] [coins coins])
-    (if (<= (length coins) 1) 1
-	(let in-lp ([curr-amount curr-amount] [combinations 0])
-	  (if (< curr-amount 0) combinations
-	      (in-lp
-	       (- curr-amount (car coins))
-	       (+ combinations (lp curr-amount (cdr coins)))))))))
-
-(define (top-down-w/memoization amount coins)
-  (define coin-length (length coins))
-  (define cache (make-array #f (1+ amount) (1+ coin-length)))
+;;; TODO: simplify proc
+(define* (top-down-w/memoization amount #:optional (coins coins))
+  (define diff-coins-count (length coins))
+  (define cache (make-array #f (1+ amount) (1+ diff-coins-count)))
   (let lp ([curr-amount amount] [coins coins])
     (if (<= (length coins) 1) 1
 	(let in-lp ([curr-amount curr-amount] [combinations 0])
@@ -54,20 +39,18 @@
 	       (let* ([cached-val
 		       (array-ref cache
 				  curr-amount
-				  (- coin-length (length coins)))]
+				  (- diff-coins-count (length coins)))]
 			[sub-combinations
 			 (if cached-val cached-val
 			     (lp curr-amount (cdr coins)))])
 		 (array-set! cache
 			     (+ combinations sub-combinations) curr-amount
-			     (- coin-length (length coins)))
+			     (- diff-coins-count (length coins)))
 		 (+ combinations sub-combinations)))))))
   (array-ref cache amount (car coins)))
-;; Bottom-up approach
+
+;; Bottom-up
 ;; TODO: finish
 (define (coin-combinations-for-amount-bottom-up amount coins)
   (define cache (make-vector (1+ amount) #f))
-  (vector-set! cache 0 1)
-  )
-
-
+  (vector-set! cache 0 1))
