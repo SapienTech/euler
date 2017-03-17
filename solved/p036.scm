@@ -1,16 +1,13 @@
 ;; Double-base palindromes
+(module (euler solved p036))
 
-(define-module (solved p036))
+(use (arguile) (euler utils))
 
-(use-modules (euler utils)
-	     (srfi srfi-1))
-
-(define (find-double-base-palendromes limit)
-  (let loop ((i 1) (palendromes '()))
-    (if (= i limit) palendromes
-	(loop (1+ i)
-	      (if (and (palendromic? (number->string i))
-		       (palendromic? (number->binary i)))
-		  (cons i palendromes)
-		  palendromes)))))
-
+(def double-base-palendromes (:o (limit :or (^ 10 6)))
+  (loop ((for i (up-from 1 (to limit)))
+         (where palendromes '()
+                (if (and (palendromic? (str i))
+                         (palendromic? (number->binary i)))
+                    (cons i palendromes)
+                    palendromes)))
+        => palendromes))
