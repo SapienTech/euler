@@ -11,7 +11,7 @@
      [(equal? item (car curr-lst)) i]
      [else (loop (1+ i) (cdr curr-lst))])))
 
-(define-public (number->digits n)
+(define-public (digits n)
   (map string->number
        (map string (string->list (number->string n)))))
 
@@ -27,7 +27,7 @@
 ;;; TODO: try impl using compose
 (define-public (digits=? n1 n2)
   (apply equal? (map (cut sort <> <)
-                     (map number->digits (list n1 n2)))))
+                     (map digits (list n1 n2)))))
 
 (define-public (digits>? n1 n2)
   (> (number-length n1) (number-length n2)))
@@ -36,7 +36,7 @@
   (string=? s (string-reverse s)))
 
 (define-public (pandigital? n)
-  (let ([digits (number->digits n)])
+  (let ([digits (digits n)])
     (lset= = digits (iota (length digits) 1))))
 
 (define-public (fold-and proc lst)
@@ -68,8 +68,8 @@
   (string->number (string-reverse (number->string n))))
 
 (define-public (permutation? n1 n2)
-  (equal? (sort (number->digits n1) <)
-	  (sort (number->digits n2) <)))
+  (equal? (sort (digits n1) <)
+	  (sort (digits n2) <)))
 
 (define-public (list-comp start end)
   (let lp ([curr start] [acc '()])
