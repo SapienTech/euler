@@ -1,6 +1,6 @@
 ;; Quadratic primes
-(module (euler solved p027))
-(use (arguile)
+(ns (euler solved p027))
+(use (argyle)
      (euler primes)
      (euler utils)
      ((srfi srfi-1) :select (reduce)))
@@ -12,10 +12,10 @@
        prn-quad))
 
 (data quad (a b c)
-      #:app (fn (n)
-              (+ (* n n)
-                 (* (quad-a self) n)
-                 (quad-b self))))
+  :app (fn (n)
+         (+ (* n n)
+            (* (quad-a self) n)
+            (quad-b self))))
 
 (def prn-quad ((quad primes))
   (app format #f "~sn^2 + ~sn + ~s has ~s quadratic prime(s)"
