@@ -1,47 +1,31 @@
 ;; Truncable primes
-(define-module (solved p037))
+(ns (euler solved p037))
+(use (argyle)
+     ((euler primes) #:select (prime?)))
 
-(use-modules (euler primes)
-	     (euler utils)
-	     (srfi srfi-1))
+;;; find sum of only 11 truncable primes
+(def solve ()
+  (app + (truncatable-primes)))
 
-;;; Note: proc not optimized
-(define (truncable-primes)
-  (define primes (erato (expt 10 6)))
-  (define (truncable? n)
-    (if (memq n '(2 3 5 7)) #f
-	(and 
-	 (let l->r-lp ([curr-n (l-truncate n)])
-	   (cond
-	    [(not curr-n) #t]
-	    [(not (prime? curr-n)) #f]
-	   [else
-	    (l->r-lp (l-truncate curr-n))]))
-	 (let r->l-lp ([curr-n (r-truncate n)])
-	   (cond
-	    [(not curr-n) #t]
-	    [(not (prime? curr-n)) #f]
-	    [else
-	    (r->l-lp (r-truncate curr-n))])))))
+(def truncatable-primes ()
+  (loop ((for n (up-from 10))
+         (where primes '()
+                (if (and (prime? n) (truncatable? n))
+                    (cons n primes)
+                    primes))
+         (while (< (len primes) 11)))
+    => primes))
 
-  (define (prime? n)
-    (memq n primes))
+;;; Expects n to be prime
+(def truncatable? (n)
+  (and-map prime? `(,@(truncables left-truncate n)
+                    ,@(truncables right-truncate n))))
 
+(def truncables (truncator n)
+  (if (< n 10) '()
+      (let n (truncator n)
+        (cons n (truncables truncator n)))))
 
-  (let lp ([curr-primes primes] [acc '()])
-    (cond
-     [(null? curr-primes) (display acc)]
-     [(= 11 (length acc)) acc]
-     [else
-      (lp (cdr curr-primes)
-	  (if (truncable? (car curr-primes))
-	      (cons (car curr-primes) acc)
-	      acc))])))
-
-
-;; truncate left-most value
-(define (l-truncate n)
-  (digits->number (drop (number->digits n) 1)))
-;; truncate right-most value
-(define (r-truncate n)
-  (digits->number (drop-right (number->digits n) 1)))
+(def left-truncate (n) (num (str-drop (str n) 1)))
+(def right-truncate (n) (num (str-take (str n)
+                                       (1- (len (str n))))))
